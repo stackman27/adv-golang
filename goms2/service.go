@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // PriceFetcher is an interface that fetches the price.
@@ -25,6 +26,8 @@ var priceMocks = map[string] float64 {
 }	
 
 func MockPriceFetcher(ctx context.Context, ticker string) (float64, error) {
+	time.Sleep(100 * time.Millisecond)
+
 	// http round trip to mimic this behavior 
 	price, ok := priceMocks[ticker]
 	if !ok {
