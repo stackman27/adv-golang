@@ -49,7 +49,7 @@ func (s *JSONAPIServer) handleFetchPrice(ctx context.Context, w http.ResponseWri
 		return err 
 	}
 
-	priceResp := &types.PriceResponse{
+	priceResp := &types.PriceResponseJSON{
 		Ticker: ticker,
 		Price: price,
 	}

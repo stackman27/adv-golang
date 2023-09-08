@@ -7,19 +7,32 @@ import (
 	"net/http"
 
 	"github.com/go-microservice/types"
+	"google.golang.org/grpc"
 )
+ 
 
-type Client struct {
+func NewGRPCClient(remoteAddr string) (types.PriceFetcherClient, error){
+	conn, err := grpc.Dial(remoteAddr, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	c := types.NewPriceFetcherClient(conn)
+
+	return c, nil
+}
+
+type client struct {
 	endpoint string
 }
 
-func New(endpoint string) *Client {
-	return &Client{
+func New(endpoint string) *client {
+	return &client{
 		endpoint: endpoint,
 	}
 }
 
-func (c *Client) FetchPrice(ctx context.Context, ticker string) (*types.PriceResponse, error) {
+func (c *client) FetchPrice(ctx context.Context, ticker string) (*types.PriceResponse, error) {
 	endpoint := fmt.Sprintf("%s?ticker=%s", c.endpoint, ticker) 
 
 	req, err := http.NewRequest("get", endpoint, nil) 

@@ -24,7 +24,8 @@ func (s *loginService) FetchPrice(ctx context.Context, ticker string) (price flo
 			"requestId": ctx.Value("requestId"),
 			"took": time.Since(begin),
 			"err": err, 
-			"price": price, 
+			"price": price,
+			"ticker": ticker, 
 		}).Info("fetchPrice")
 	}(time.Now())
 

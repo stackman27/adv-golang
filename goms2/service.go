@@ -12,7 +12,7 @@ type PriceFetcher interface {
 }
 
 // pricefetcher implements the PriceFetcher implements
-type pricefetcher struct {}
+type pricefetcher struct {} 
 
 // interface function
 func (s *pricefetcher) FetchPrice(ctx context.Context, ticker string) (float64, error) {
