@@ -33,6 +33,7 @@ func makeHTTPHandlerFunc(fn APIFunc) http.HandlerFunc {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "requestId", rand.Intn(1000000))
 
+	// this is where all the errros are getting handled
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := fn(ctx, w, r); err != nil {
 			writeJSON(w, http.StatusBadRequest, map[string]any{"error": err.Error()})
