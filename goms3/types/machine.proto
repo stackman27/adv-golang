@@ -1,0 +1,22 @@
+syntax="proto3";
+ 
+option go_package = "./types";
+
+service Machine {
+    // stream keyword indicates that the Execute RPC operates in a streaming mode, where it can continuously 
+    // receive and send data rather than just a single request and response. It's particularly useful for scenarios 
+    // where there is a need for ongoing or asynchronous communication between the client and server, such as real-time 
+    // data processing, long-lived connections, or data streaming applications.
+    rpc Execute(stream Instruction) returns (stream Result) {}
+}
+
+message Instruction {
+    // this is the value that goes in the stack (like 1,2,3,4)
+    string operator = 1; 
+    // this is the command (like add,subtract etc)
+    int32 operand = 2;
+}
+
+message Result {
+    float output=2;
+}
