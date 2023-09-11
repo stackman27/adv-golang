@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func main() {
-	handlePostRequest()
+	fmt.Println("Hello World")
 }
