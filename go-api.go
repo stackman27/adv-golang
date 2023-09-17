@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2/log"
-) 
+)
 
 func api_main() {
 	handlePostRequest()
@@ -16,31 +16,30 @@ func api_main() {
 
 // Define a struct that matches the JSON response structure
 type Todo struct {
-    UserId   	int 	`json:"userId"`
-    Id 			int    	`json:"id"`
-	Title 		string 	`json:"title"`
-	Completed 	bool	`json:"completed"`
+	UserId    int    `json:"userId"`
+	Id        int    `json:"id"`
+	Title     string `json:"title"`
+	Completed bool   `json:"completed"`
 }
 
 type TodoPost struct {
-	Title 		string 	`json:"title"`
-	Body 		string 	`json:"body"`
-	UserId 		int 	`json:"usedId"`
+	Title  string `json:"title"`
+	Body   string `json:"body"`
+	UserId int    `json:"usedId"`
 }
 
-// Get Endpoint  
+// Get Endpoint
 func handleGetRequest() {
-    url := "https://jsonplaceholder.typicode.com/todos/1"
-
+	url := "https://jsonplaceholder.typicode.com/todos/1"
 
 	// Send a GET request to the API
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error("Error occoured while getting")
-		return 
+		return
 	}
-	
-	// ensure that the response body of the HTTP request is closed properly when you're done processing the response. 
+
+	// ensure that the response body of the HTTP request is closed properly when you're done processing the response.
 	defer resp.Body.Close()
 
 	// Read the response body
@@ -49,29 +48,26 @@ func handleGetRequest() {
 		fmt.Printf("Error reading response body: %v\n", err)
 		return
 	}
-	
- 
-    // Parse the JSON response into a CatFact struct
-    var todo Todo
-    if err := json.Unmarshal(body, &todo); err != nil {
-        fmt.Printf("Error parsing JSON response: %v\n", err)
-        return
-    } 
+
+	// Parse the JSON response into a CatFact struct
+	var todo Todo
+	if err := json.Unmarshal(body, &todo); err != nil {
+		fmt.Printf("Error parsing JSON response: %v\n", err)
+		return
+	}
 	// Access the parsed data
 	fmt.Println(todo)
 }
 
-
-// Post endpoint 
-func handlePostRequest() {	
+// Post endpoint
+func handlePostRequest() {
 	// URL of the API you want to send the POST request to
 	url := "https://jsonplaceholder.typicode.com/posts"
 
-
 	// Create a test Todo instance
 	testTodo := TodoPost{
-		Title: "sishir",
-		Body: "sishirRequest",
+		Title:  "sishir",
+		Body:   "sishirRequest",
 		UserId: 1,
 	}
 
@@ -81,7 +77,7 @@ func handlePostRequest() {
 		fmt.Printf("Error serializing JSON: %v\n", err)
 		return
 	}
-	 
+
 	// Send the POST request
 	response, err := http.Post(url, "application/json; charset=UTF-8", bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -90,20 +86,19 @@ func handlePostRequest() {
 	}
 	defer response.Body.Close()
 
- 
 	// Check the response status code
-	if response.StatusCode != http.StatusCreated { 
-        fmt.Printf("Received non-OK status code: %v\n", response.StatusCode)
-        return
-    }
+	if response.StatusCode != http.StatusCreated {
+		fmt.Printf("Received non-OK status code: %v\n", response.StatusCode)
+		return
+	}
 
-    // Read the response body
-    responseBody, err := io.ReadAll(response.Body)
-    if err != nil {
-        fmt.Printf("Error reading response body: %v\n", err)
-        return
-    }
+	// Read the response body
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("Error reading response body: %v\n", err)
+		return
+	}
 
-    // Process the response body
-    fmt.Println("Response Body:", string(responseBody))	
+	// Process the response body
+	fmt.Println("Response Body:", string(responseBody))
 }

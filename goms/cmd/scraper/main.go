@@ -24,14 +24,14 @@ type Scraper struct {
 	url string
 	// ProcessId = id to get the engine that is used to locate where the process is and execute them
 	// Normally replaced this by cluster
-	storePID *actor.PID  
-	engine *actor.Engine
+	storePID *actor.PID
+	engine   *actor.Engine
 }
 
 func newScraper(url string, storePID *actor.PID) actor.Producer {
 	return func() actor.Receiver {
 		return &Scraper{
-			url: url, 
+			url:      url,
 			storePID: storePID,
 		}
 	}
@@ -39,26 +39,26 @@ func newScraper(url string, storePID *actor.PID) actor.Producer {
 
 func (s *Scraper) Receive(c *actor.Context) {
 	switch msg := c.Message().(type) {
-		case actor.Started:
-			s.engine = c.Engine()
-			go s.scrapeLoop() // goRoutine: this is so that we dont block the message scraping when we recall
-		case actor.Stopped: 
+	case actor.Started:
+		s.engine = c.Engine()
+		go s.scrapeLoop() // goRoutine: this is so that we dont block the message scraping when we recall
+	case actor.Stopped:
 
-		default:
-			_ = msg
+	default:
+		_ = msg
 	}
 }
 
 func (s *Scraper) scrapeLoop() {
 	for {
-		resp, err := http.Get(s.url) 
+		resp, err := http.Get(s.url)
 		if err != nil {
-			panic(err) 
+			panic(err)
 		}
 		var res CatFact
 		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 			log.Print("failed to decode the response bytes: ", err)
-			continue;
+			continue
 		}
 
 		s.engine.Send(s.storePID, &types.CatFact{
@@ -80,13 +80,12 @@ func main() {
 
 	e := actor.NewEngine()
 	r := remote.New(e, remote.Config{ListenAddr: *listenAddr})
-	e.WithRemote(r) 
-
+	e.WithRemote(r)
 
 	// pid 127.0.0.1/store
 	storePID := actor.NewPID("127.0.0.1:4000", "store")
 
-	e.Spawn(newScraper(url, storePID), "store") 
+	e.Spawn(newScraper(url, storePID), "store")
 
-	select{}
+	select {}
 }
