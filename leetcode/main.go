@@ -9,12 +9,787 @@ import (
 )
 
 func main() {
-	longestRepeatedCharacterReplacement()
+	// edges := [][]int{
+	// 	{1, 2},
+	// 	{1, 3},
+	// 	{2, 4},
+	// 	{2, 5},
+	// 	{3, 6},
+	// }
+
+	// root := RecreateTreeFromEdges(edges)
+	// PrintIndentedTree(root, 0, -1, true)
+
+	pathSum()
+
 }
 
-// String
+// ***************** Binary Search Tree ***************** //
+func pathSum() {
+	edges := [][]int{
+		{8, 3},
+		{8, 10},
+		{3, 1},
+		{3, 6},
+		{6, 4},
+		{4, 7},
+		{10, 14},
+		{10, 9},
+		{14, 13},
+	}
 
-// TODO understand this
+	// Build BST given edges
+	var root *BSTNode
+	for _, edge := range edges {
+		parent, child := edge[0], edge[1]
+
+		if root == nil {
+			root = &BSTNode{Val: parent}
+		}
+		root = insertIntoBST(root, child)
+	}
+
+	targetSum := 27
+	// run dfs from this node
+	var runDfs func(*BSTNode, int) bool
+
+	runDfs = func(rootNode *BSTNode, currSum int) bool {
+		if rootNode == nil {
+			return false
+		}
+
+		currSum += rootNode.Val
+
+		// meaning this is child
+		if rootNode.Left == nil && rootNode.Right == nil {
+			return currSum == targetSum
+		}
+
+		return runDfs(rootNode.Left, currSum) || runDfs(rootNode.Right, currSum)
+	}
+
+	hasPathSum := runDfs(root, 0)
+	fmt.Println(hasPathSum)
+
+	// PrintIndentedTree(root, 0, -1, true)
+}
+
+type BSTNode struct {
+	Val   int
+	Left  *BSTNode
+	Right *BSTNode
+}
+
+func KthSmallestElementInBST(root *BSTNode) {
+	// the trick is to search through the entire left side and add it to stack then go to the root node and then the right side
+	kthElement := 5
+	stack := []*BSTNode{root}
+	current := root
+
+	count := 0
+
+	for len(stack) > 0 {
+		for current != nil {
+			stack = append(stack, current)
+			current = current.Left
+		}
+
+		current = stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		count++
+		if kthElement == count {
+			fmt.Printf("Kth %d element is %d\n", kthElement, current.Val)
+			break
+		}
+
+		// move to the right
+		current = current.Right
+	}
+
+}
+
+func InOrderTraversal(root *BSTNode) {
+	if root == nil {
+		return
+	}
+
+	InOrderTraversal(root.Left)
+	fmt.Printf("%d ", root.Val)
+	InOrderTraversal(root.Right)
+}
+
+func buildBSTGivenEdges() {
+	edges := [][]int{
+		{3, 2},
+		{3, 4},
+		{2, 1},
+		{4, 5},
+	}
+
+	var root *BSTNode
+
+	for _, edge := range edges {
+		parent, child := edge[0], edge[1]
+
+		if root == nil {
+			root = &BSTNode{Val: parent}
+		}
+		root = insertIntoBST(root, child)
+	}
+	KthSmallestElementInBST(root)
+	//InOrderTraversal(root)
+}
+
+func insertIntoBST(root *BSTNode, value int) *BSTNode {
+	if root == nil {
+		return &BSTNode{Val: value}
+	}
+
+	if value < root.Val {
+		// insert to left
+		root.Left = insertIntoBST(root.Left, value)
+	} else if value > root.Val {
+		// insert to right
+		root.Right = insertIntoBST(root.Right, value)
+	}
+
+	return root
+}
+
+// Minimum Height Tree to find the root
+func MinHeightTree() {
+	edges := [][]int{
+		// {1, 2},
+		// {2, 3},
+		// {3, 4},
+		{3, 4},
+		{3, 0},
+		{3, 1},
+		{3, 2},
+		{4, 5},
+	}
+	graph := make(map[int][]int)
+	edgeMap := make(map[int]int)
+
+	for _, edge := range edges {
+		edge0, edge1 := edge[0], edge[1]
+
+		graph[edge0] = append(graph[edge0], edge1)
+		graph[edge1] = append(graph[edge1], edge0)
+		edgeMap[edge0]++
+		edgeMap[edge1]++
+	}
+
+	nonLeafNodes := []int{}
+	for node, val := range edgeMap {
+		if val != 1 {
+			nonLeafNodes = append(nonLeafNodes, node)
+		}
+	}
+
+	// smallest height node
+	minHeightNodes := make(map[int]int)
+	for _, node := range nonLeafNodes {
+		visited := make(map[int]bool)
+		height := 0
+		// run BFS from nodes and record the smallest height
+		queue := []int{node} // FIFO
+		visited[node] = true
+
+		for len(queue) > 0 {
+			levelSize := len(queue)
+			for i := 0; i < levelSize; i++ { // process all current nodes before moving to the next node
+				queueVal := queue[0]
+				queue = queue[1:]
+
+				for _, neighbor := range graph[queueVal] {
+					if !visited[neighbor] {
+						visited[neighbor] = true
+						queue = append(queue, neighbor)
+					}
+				}
+			}
+			height++
+		}
+
+		minHeightNodes[node] = height - 1
+	}
+
+	fmt.Println(minHeightNodes)
+
+	minDegreeNodes := []int{}
+	minVal := -1
+	for node, val := range minHeightNodes {
+		// this calculates the max value in the hashmap
+		if val > minVal {
+			minDegreeNodes = []int{node} // we directly modify the maxDegreeNode array
+			minVal = val
+		} else if val == minVal {
+			minDegreeNodes = append(minDegreeNodes, node)
+		}
+	}
+
+	fmt.Println(minDegreeNodes)
+}
+
+type TreeNode1 struct {
+	Value    int
+	Children []*TreeNode1
+}
+
+// CreateTreeNode creates a new TreeNode1 with the given value
+func CreateTreeNode(value int) *TreeNode1 {
+	return &TreeNode1{
+		Value:    value,
+		Children: []*TreeNode1{},
+	}
+}
+
+// func PrintIndentedTree(node *TreeNode, depth int) {
+//     if node == nil {
+//         return
+//     }
+
+//     fmt.Printf("%*s%d\n", depth*2, "", node.Value)
+//     for _, child := range node.Children {
+//         PrintIndentedTree(child, depth+1)
+//     }
+// }
+
+// PrintTree prints the tree in a depth-first manner
+func PrintIndentedTree(node *TreeNode1, depth int, parentValue int, isLastChild bool) {
+	if node == nil {
+		return
+	}
+
+	branch := "├─ "
+	if isLastChild {
+		branch = "└─ "
+	}
+
+	fmt.Printf("%*s%s%d (Parent: %d, Children: %v)\n", depth*4, "", branch, node.Value, parentValue, getChildValues(node.Children))
+
+	for i, child := range node.Children {
+		isLast := i == len(node.Children)-1
+		PrintIndentedTree(child, depth+1, node.Value, isLast)
+	}
+}
+
+func getChildValues(children []*TreeNode1) []int {
+	values := make([]int, len(children))
+	for i, child := range children {
+		values[i] = child.Value
+	}
+	return values
+}
+
+// Edge case: same number nodes
+func RecreateTreeFromEdges(edges [][]int) *TreeNode1 {
+	nodeMap := make(map[int]*TreeNode1)
+	inDegree := make(map[int]int)
+
+	// Create Nodes and build map
+	for _, edge := range edges {
+		u, v := edge[0], edge[1]
+
+		if _, exists := nodeMap[u]; !exists {
+			nodeMap[u] = CreateTreeNode(u)
+		}
+
+		if _, exists := nodeMap[v]; !exists {
+			nodeMap[v] = CreateTreeNode(v)
+		}
+
+		// Todo handle duplicate case
+
+		nodeMap[u].Children = append(nodeMap[u].Children, nodeMap[v])
+		inDegree[u] += 0
+		inDegree[v]++
+
+	}
+
+	// find the root node whose inDegree is 0
+	var root *TreeNode1
+	for _, node := range nodeMap {
+		if inDegree[node.Value] == 0 {
+			root = node
+			break
+		}
+	}
+
+	fmt.Println("ROOT: ", root)
+
+	return root
+}
+
+// ***************** Graph ***************** //
+func distanceFromNode() {
+	graph := [][]int{
+		3: {5, 1},
+		5: {6, 2},
+		2: {7, 4},
+		1: {0, 8},
+		6: {},
+		7: {},
+		4: {},
+		0: {},
+		8: {},
+	}
+
+	distance := 2
+	fromNode := 5
+	childParentNodes := make(map[int]int)
+
+	// Initialize all nodes with parent = nil
+	for node := range graph {
+		childParentNodes[node] = -1 // You can use any value that represents nil, -1 is just an example.
+	}
+
+	for node := range graph {
+		for _, val := range graph[node] {
+			childParentNodes[val] = node
+		}
+	}
+
+	// initialize Queue and Run BFS
+
+	queue := []int{}
+	visited := make(map[int]bool)
+	queue = append(queue, fromNode)
+	level := 0
+
+	for len(queue) > 0 && level <= distance {
+		queueVal := queue[0]
+		for i := 0; i < len(queue); i++ {
+			queue = queue[1:]
+
+			if !visited[queueVal] {
+				visited[queueVal] = true
+
+				// also append it's children to run BFS
+				for _, neighbor := range graph[queueVal] {
+					if !visited[neighbor] {
+						queue = append(queue, neighbor)
+					}
+				}
+
+				// get the queueVal parent and append it to the queue
+				parent := childParentNodes[queueVal]
+				if parent != -1 && !visited[parent] {
+					queue = append(queue, parent)
+				}
+			}
+			level++
+		}
+
+	}
+
+	fmt.Println(queue)
+
+}
+
+func numOfIsland() {
+	var grid = [][]string{
+		{"1", "1", "1", "1", "0"},
+		{"1", "1", "0", "1", "0"},
+		{"1", "1", "0", "0", "0"},
+		{"0", "0", "0", "0", "1"},
+	}
+
+	numOfIslands := 0
+	numRows := len(grid)
+	numCols := len(grid[0])
+
+	for r := 0; r < numRows; r++ {
+		for c := 0; c < numCols; c++ {
+			// if the grid value is 1 do something
+			if grid[r][c] == "1" {
+				run_bfs(grid, r, c)
+				numOfIslands += 1
+			}
+		}
+	}
+
+	fmt.Println(numOfIslands)
+}
+
+func run_bfs(grid [][]string, row, col int) {
+	queue := [][]int{}
+	queue = append(queue, []int{row, col})
+	grid[row][col] = "2"
+
+	for len(queue) > 0 {
+		queueVal := queue[0]
+		queue = queue[1:]
+
+		directions := [][]int{{-1, 0}, {1, 0}, {0, 1}, {0, -1}}
+
+		for _, direction := range directions {
+			// check if these direction is in bound
+			// [0] is row and [1] is column
+			row := queueVal[0] + direction[0]
+			col := queueVal[1] + direction[1]
+			if row >= 0 && row < len(grid) && col >= 0 && col < len(grid[row]) && grid[row][col] == "1" {
+				queue = append(queue, []int{row, col})
+				grid[row][col] = "2"
+			}
+		}
+
+	}
+}
+
+func courseSchedule_() {
+	numCourses := 5
+	edges := [][]int{{0, 1}, {0, 2}, {1, 3}, {1, 4}, {3, 4}}
+	graph := make(map[int][]int)
+
+	for _, edge := range edges {
+		edge0, edge1 := edge[0], edge[1]
+		graph[edge0] = append(graph[edge0], edge1)
+	}
+
+	visited := make([]bool, numCourses)
+
+	isValid := true
+
+	var dfs func(course int)
+	dfs = func(course int) {
+		visited[course] = true
+
+		for _, neighbor := range graph[course] {
+			if !visited[neighbor] {
+				dfs(neighbor)
+			} else {
+				isValid = false // Detected a cycle
+				break
+			}
+		}
+
+		visited[course] = false
+	}
+
+	for course := 0; course < numCourses; course++ {
+		if !visited[course] {
+			dfs(course)
+		}
+	}
+
+	fmt.Println(isValid)
+}
+
+type CloneNode struct {
+	Val       int
+	Neighbors []*CloneNode
+}
+
+func cloneGraph(node *CloneNode) *CloneNode {
+
+	// run this in main() to test
+	// node1 := &CloneNode{Val: 1}
+	// node2 := &CloneNode{Val: 2}
+	// node3 := &CloneNode{Val: 3}
+	// node4 := &CloneNode{Val: 4}
+
+	// node1.Neighbors = []*CloneNode{node2, node4}
+	// node2.Neighbors = []*CloneNode{node1, node3}
+	// node3.Neighbors = []*CloneNode{node2, node4}
+	// node4.Neighbors = []*CloneNode{node1, node3}
+
+	// clonedNode := cloneGraph(node1)
+	// fmt.Println(clonedNode)
+
+	visited := make(map[*CloneNode]*CloneNode)
+
+	var clone func(*CloneNode) *CloneNode
+
+	clone = func(original *CloneNode) *CloneNode {
+		cloned, exist := visited[original]
+		if exist {
+			return cloned
+		}
+
+		newNode := &CloneNode{Val: original.Val}
+		visited[original] = newNode
+
+		for _, neighbor := range original.Neighbors {
+			newNeighbor := clone(neighbor)
+			newNode.Neighbors = append(newNode.Neighbors, newNeighbor)
+		}
+
+		return newNode
+	}
+
+	return clone(node)
+}
+
+func containsCycle() {
+	graph := map[string][]string{
+		"A": {"B"},
+		"B": {"C"},
+		"C": {"D"},
+		"D": {},
+	}
+
+	var dfs func(course string)
+	visited := make(map[string]bool)
+	containsCycle := false
+
+	dfs = func(course string) {
+		visited[course] = true
+
+		for _, neighbor := range graph[course] {
+			if !visited[neighbor] {
+				dfs(neighbor)
+			} else {
+				containsCycle = true
+				break
+			}
+		}
+	}
+
+	for node := range graph {
+		if !visited[node] {
+			dfs(node)
+		}
+	}
+
+	fmt.Println(containsCycle)
+}
+
+// BFS
+func BFS() {
+	graph := map[string][]string{
+		"a": {"b", "c"},
+		"b": {"d"},
+		"c": {"e"},
+		"d": {"f"},
+		"e": {},
+		"f": {},
+	}
+
+	queue := []string{"a"} // FIFO
+
+	for len(queue) > 0 {
+		queueVal := queue[0]
+		queue = queue[1:]
+
+		fmt.Println(queueVal)
+
+		for _, node := range graph[queueVal] {
+			queue = append(queue, node)
+		}
+
+	}
+}
+
+func hasPath() {
+	// find the shortest distance from A to E
+	var graph = map[string][]string{
+		"A": {"B", "C"},
+		"B": {"D"},
+		"C": {"E"},
+		"D": {"F"},
+		"E": {},
+		"F": {},
+	}
+
+	// check to see if a path exist from A to E
+	end := "E"
+	stack := []string{"B"}
+	hasVisited := make(map[string]bool)
+
+	for len(stack) > 0 {
+		stackVal := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if stackVal == end {
+			fmt.Println("Path exist")
+			break
+		}
+
+		if !hasVisited[stackVal] {
+			hasVisited[stackVal] = true
+
+			for _, node := range graph[stackVal] {
+				stack = append(stack, node)
+			}
+		}
+
+	}
+}
+
+func shortestPath() {
+	var graph = map[string][]string{
+		"A": {"B", "C"},
+		"B": {"A", "D"},
+		"C": {"A", "E"},
+		"D": {"B", "E"},
+	}
+
+	destination := "E"
+	queue := [][]string{{"A"}}
+	hasVisited := make(map[string]bool)
+
+	for len(queue) > 0 {
+		path := queue[0]
+		queue = queue[1:]
+
+		node := path[len(path)-1]
+
+		if node == destination {
+			// Path found
+			fmt.Println(path)
+			break
+		}
+
+		if !hasVisited[node] {
+			hasVisited[node] = true
+
+			for _, val := range graph[node] {
+				newPath := append([]string{}, path...)
+				newPath = append(newPath, val)
+
+				queue = append(queue, newPath)
+			}
+		}
+
+	}
+}
+
+// DFS
+func DFS() {
+	graph := map[string][]string{
+		"a": {"b", "c"},
+		"b": {"d"},
+		"c": {"e"},
+		"d": {"f"},
+		"e": {},
+		"f": {},
+	}
+
+	stack := []string{}
+	stack = append(stack, "a")
+
+	for len(stack) > 0 {
+		stackVal := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		fmt.Println(stackVal)
+
+		for _, node := range graph[stackVal] {
+			stack = append(stack, node)
+		}
+	}
+}
+
+func countConnectedComponents() {
+	var graph = map[string][]string{
+		"a": {"b", "c"},
+		"b": {"a", "d"},
+		"c": {"a", "e"},
+		"d": {"b", "f"},
+		"e": {"c"},
+		"f": {"d"},
+		"g": {"h"},
+		"h": {"g"},
+		"i": {},
+	}
+
+	count := 0
+	hasVisited := make(map[string]bool)
+
+	for node := range graph {
+		stack := []string{node}
+
+		if !hasVisited[node] {
+			for len(stack) > 0 {
+				stackVal := stack[len(stack)-1]
+				stack = stack[:len(stack)-1]
+
+				if !hasVisited[stackVal] {
+					hasVisited[stackVal] = true
+					for _, node := range graph[stackVal] {
+						stack = append(stack, node)
+					}
+				}
+			}
+			count++
+		}
+	}
+
+	fmt.Println(count)
+}
+
+func buildGraphGivenEdgesAndFindRoot() {
+	edges := [][]string{
+		{"N1", "N3"},
+		{"N3", "A"},
+		{"A", "B"},
+		{"A", "D"},
+		{"B", "C"},
+		{"D", "C"},
+	}
+
+	graph := make(map[string][]string)
+	inDegree := make(map[string]int)
+	for _, edge := range edges {
+		edge0, edge1 := edge[0], edge[1]
+		graph[edge0] = append(graph[edge0], edge1)
+		inDegree[edge[1]]++
+
+	}
+
+	// Find the node with an in-degree of 0, which is the root
+	for node, degree := range inDegree {
+		if degree == 0 {
+			fmt.Println("NODE: ", node)
+			break
+		}
+	}
+
+	fmt.Println(inDegree)
+}
+
+// ***************** Stack ***************** //
+func ValidParenthesis() {
+	s := "()[]" // true, ()[]{} = true, (] false
+
+	hashMap := make(map[rune]rune)
+
+	hashMap[')'] = '('
+	hashMap['}'] = '{'
+	hashMap[']'] = '['
+
+	// LIFO
+	stack := []rune{}
+	output := true
+
+	for _, val := range s { // TODO check if this is the correct loop
+		newVal, ok := hashMap[val]
+		if ok {
+			stackVal := stack[len(stack)-1]
+			if len(stack) != 0 && newVal == stackVal {
+				stack = stack[:len(stack)-1]
+			} else {
+				output = false
+				break
+			}
+		} else {
+			stack = append(stack, val)
+		}
+
+	}
+
+	if len(stack) != 0 {
+		output = false
+	}
+
+	fmt.Println(output)
+}
+
+// ***************** String ***************** //
+
 func longestRepeatedCharacterReplacement() {
 	s := "AABABBA" // Output: 4, Replace the two 'A's with two 'B's or vice versa.
 	k := 1
@@ -39,7 +814,6 @@ func longestRepeatedCharacterReplacement() {
 	}
 
 	fmt.Println(output)
-
 }
 
 // Runtime: nlogn
@@ -262,7 +1036,7 @@ func min(a, b int) int {
 	return b
 }
 
-// Arrays
+// ***************** Array ***************** //
 // Note: SlidingWindow
 func MinSizeSubArraySum() {
 	target := 7
