@@ -20,11 +20,54 @@ func main() {
 	// root := RecreateTreeFromEdges(edges)
 	// PrintIndentedTree(root, 0, -1, true)
 
-	pathSum()
+	GraphValidTree()
 
 }
 
 // ***************** Binary Search Tree ***************** //
+
+func invertBinaryTree() {
+	edges := [][]int{
+		{4, 2},
+		{4, 7},
+		{2, 1},
+		{2, 3},
+		{7, 6},
+		{7, 9},
+	}
+
+	// Build BST given edges
+	var root *BSTNode
+	for _, edge := range edges {
+		parent, child := edge[0], edge[1]
+
+		if root == nil {
+			root = &BSTNode{Val: parent}
+		}
+		root = insertIntoBST(root, child)
+	}
+
+	var invertTree func(*BSTNode) *BSTNode
+
+	invertTree = func(root *BSTNode) *BSTNode {
+		if root == nil {
+			return nil
+		}
+
+		tmp := root.Left
+		root.Left = root.Right
+		root.Right = tmp
+
+		invertTree(root.Left)
+		invertTree(root.Right)
+
+		return root
+	}
+
+	invertedRoot := invertTree(root)
+	fmt.Println(invertedRoot)
+}
+
 func pathSum() {
 	edges := [][]int{
 		{8, 3},
@@ -324,6 +367,56 @@ func RecreateTreeFromEdges(edges [][]int) *TreeNode1 {
 }
 
 // ***************** Graph ***************** //
+func GraphValidTree() {
+	edges := [][]int{
+		{0, 1},
+		{0, 2},
+		{0, 3},
+		{1, 4},
+	}
+
+	graph := make(map[int][]int)
+
+	// create adjacency list
+	for _, edge := range edges {
+		edge0, edge1 := edge[0], edge[1]
+
+		graph[edge0] = append(graph[edge0], edge1)
+	}
+
+	// check if the adjacency list is valid
+	// 1. Run Dfs
+
+	visited := make(map[int]bool)
+	stack := []int{0}
+
+	for len(stack) > 0 {
+		node := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if visited[node] {
+			fmt.Println("Detected a node")
+			break
+		}
+
+		visited[node] = true
+
+		for _, neighbor := range graph[node] {
+			if !visited[neighbor] {
+				stack = append(stack, neighbor)
+			}
+		}
+
+	}
+
+	fmt.Println("Visited: ", visited)
+	fmt.Println(len(visited) == 5)
+}
+
+func PacificAtlanticWaterFlow() {
+	// tODO
+}
+
 func distanceFromNode() {
 	graph := [][]int{
 		3: {5, 1},
